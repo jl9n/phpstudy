@@ -1,0 +1,1 @@
+	PHP+jQuery+Ajax+Mysql文章心情投票

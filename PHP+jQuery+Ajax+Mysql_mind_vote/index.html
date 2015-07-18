@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head> 
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+        <title>演示：PHP+jQuery+Ajax+Mysql实现文章心情投票功能</title>
+        <meta name="keywords" content="心情投票,jQuery在线投票" />
+        <meta name="description" content="本文实现投票的基本流程：通过ajax获取心情图标及柱状图相关数据，当用户点击其中的一个心情图标时，向Ajax.php发送请求，PHP验证用户cookie防止重复提交，然后将mysql中对应的数据心情字段内容加1，成功后返回前端页面，并更新柱状图和统计数据。" />
+        <link rel="stylesheet" type="text/css" href="http://www.sucaihuo.com/jquery/css/common.css" />
+        <style type="text/css">
+            .vote{position:relative;text-align: center;margin:50px auto 0}
+            #mood{text-align:center;}
+            #mood ul li,#mood ul li div.pillar{display:inline-block;display:-moz-inline-stack;zoom:1;*display:inline;}
+            #mood ul li{width:80px; vertical-align: bottom; font-size:14px}
+            #mood ul li span{ font-size:12px}
+            #mood ul li div.pillar{height:20px; width:80px; background:url(images/bar.gif) repeat-y center;}
+            img{border:1px solid #fff}
+            .face{padding-top:10px; cursor:pointer}
+            .face:hover{background:#f2faed}
+            .selected{border:1px solid #3c0; background:url(images/checkbox.gif) no-repeat right bottom}
+            #msg{position:absolute; top:-25px; left:250px; color:#f60; font-size:14px; font-weight:bold}
+        </style>
+    </head>
+    <body>
+        <div class="head">
+            <div class="head_inner clearfix">
+                <ul id="nav">
+                    <li><a href="http://www.sucaihuo.com">首 页</a></li>
+                    <li><a href="http://www.sucaihuo.com/templates">网站模板</a></li>
+                    <li><a href="http://www.sucaihuo.com/js">网页特效</a></li>
+                    <li><a href="http://www.sucaihuo.com/php">PHP</a></li>
+                    <li><a href="http://www.sucaihuo.com/site">精选网址</a></li>
+                </ul>
+                <a class="logo" href="http://www.sucaihuo.com"><img src="http://www.sucaihuo.com/Public/images/logo.jpg" alt="素材火logo" /></a>
+            </div>
+        </div>
+        <div class="container">
+            <div class="demo">
+                <h2 class="title"><a href="http://www.sucaihuo.com/js/155.html">教程：PHP+jQuery+Ajax+Mysql实现文章心情投票功能</a></h2>
+                <div class='vote'>
+                <div id="msg"></div>
+                <div id='mood'>
+                    <ul></ul>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="foot">
+            Powered by sucaihuo.com  本站皆为作者原创，转载请注明原文链接：<a href="http://www.sucaihuo.com" target="_blank">www.sucaihuo.com</a>
+        </div>
+        <script type="text/javascript" src="http://www.sucaihuo.com/Public/js/other/jquery.js"></script> 
+        <script type="text/javascript">
+            $(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: 'ajax.php',
+                    cache: false,
+                    data: 'id=1',
+                    dataType: 'json',
+                    error: function() {
+                        alert('出错了！');
+                    },
+                    success: function(json) {
+                        if (json) {
+                            $.each(json, function(index, array) {
+                                var str = "<li><span>" + array['mood_val'] + "</span><div class=\"pillar\" style=\"height:" + array['height'] + "px;\"></div><div class=\"face\" rel=\"" + array['mid'] + "\"><img src=\"images/" + array['mood_pic'] + "\"><br/>" + array['mood_name'] + "</div></li>";
+                                $("#mood ul").append(str);
+                            });
+                        }
+                    }
+                });
+                $(".face").live('click', function() {
+                    var face = $(this);
+                    var mid = face.attr("rel");
+                    var value = face.parent().find("span").html();
+                    var val = parseInt(value) + 1;
+                    $.post("ajax.php?action=send", {moodid: mid, id: 1}, function(data) {
+                        if (data > 0) {
+                            face.prev().css("height", data + "px");
+                            face.parent().find("span").html(val);
+                            face.find("img").addClass("selected");
+                        } else {
+                            $("#msg").show().html(data).fadeOut(2000);
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
